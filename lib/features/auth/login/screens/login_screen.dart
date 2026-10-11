@@ -1,6 +1,9 @@
-
+import 'package:dio/dio.dart';
+import 'package:ecommerce_app_huma_volve/features/auth/login/data/login_request_body.dart';
+import 'package:ecommerce_app_huma_volve/features/auth/login/data/repos/login_repo.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../core/network/api_services.dart';
 import '../../../../core/widgets/custom_text_field.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../core/theme.dart';
@@ -18,12 +21,16 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController emailController;
   late final TextEditingController passwordController;
+  late final ApiServices apiServices;
+  late final LoginRepo loginRepo;
+  bool isLoading = false;
 
   @override
   void initState() {
     emailController = TextEditingController();
     passwordController = TextEditingController();
-
+    apiServices = ApiServices();
+    loginRepo = LoginRepo(apiServices);
     super.initState();
   }
 
@@ -108,13 +115,39 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 32),
                 PrimaryButton(
                   text: 'Login',
-                  onPressed: () {
+                  isLoading: isLoading,
+                  onPressed: () async {
                     if (_formKey.currentState?.validate() ?? false) {
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(
-                          builder: (context) => MainNavigationScreen(),
-                        ),
-                      );
+                      setState(() {
+                        isLoading = true;
+                      });
+                      try {
+                        final response = await loginRepo.login(
+                          LoginRequestBody(
+                            email: emailController.text,
+                            password: passwordController.text,
+                          ),
+                        );
+                        debugPrint('Login successful: ${response.accessToken}');
+                        debugPrint('Refresh Token: ${response.refreshToken}');
+                        setState(() {
+                          isLoading = false;
+                        });
+                        // Navigate to the main navigation screen
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const MainNavigationScreen(),
+                          ),
+                        );
+                      } on DioException catch (e) {
+                        setState(() {
+                          isLoading = false;
+                        });
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(SnackBar(content: Text(e.toString())));
+                      }
                     }
                   },
                 ),

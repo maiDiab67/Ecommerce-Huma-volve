@@ -1,9 +1,13 @@
+import 'package:dio/dio.dart';
+import 'package:ecommerce_app_huma_volve/features/auth/sign_up/data/repo/signup_repo.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../core/network/api_services.dart';
 import '../../../../core/widgets/custom_text_field.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../core/theme.dart';
 import '../../login/screens/login_screen.dart';
+import '../data/models/signup_request_body.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -17,13 +21,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
   late final TextEditingController nameController;
   late final TextEditingController emailController;
   late final TextEditingController passwordController;
+  bool isLoading = false;
+  late final SignupRepo signupRepo;
+  late final ApiServices apiServices;
 
   @override
   void initState() {
     nameController = TextEditingController();
     emailController = TextEditingController();
     passwordController = TextEditingController();
-
+    apiServices = ApiServices();
+    signupRepo = SignupRepo(apiServices);
     super.initState();
   }
 
@@ -109,15 +117,43 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 const SizedBox(height: 40),
                 PrimaryButton(
+                  isLoading: isLoading,
                   text: 'Sign Up',
                   onPressed: () async {
                     if (_formKey.currentState?.validate() ?? false) {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const LoginScreen(),
-                        ),
-                      );
+                      try {
+                        setState(() {
+                          isLoading = true;
+                        });
+                        final response = await signupRepo.signUp(
+                          SignupRequestBody(
+                            name: nameController.text,
+                            email: emailController.text,
+                            password: passwordController.text,
+                            role: 'customer',
+                            avatar: 'https://i.imgur.com/DTfowdu.jpg',
+                          ),
+                        );
+                        debugPrint('Sign Up successful: ${response.id}');
+                        setState(() {
+                          isLoading = false;
+                        });
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Sign Up successful: ${response.id}'),
+                          ),
+                        );
+                      } on DioException catch (e) {
+                        debugPrint('Sign Up failed: ${e.message}');
+                        setState(() {
+                          isLoading = false;
+                        });
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Sign Up failed: ${e.message}'),
+                          ),
+                        );
+                      }
                     }
                   },
                 ),
