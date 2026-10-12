@@ -1,26 +1,50 @@
 import 'package:flutter/material.dart';
-import '../../../core/dummy_data.dart';
-import '../../../core/theme.dart';
-import '../../details/screens/product_details_screen.dart';
+
+import '../../../../core/theme.dart';
+import '../../../details/screens/product_details_screen.dart';
+import '../../data/models/product_model.dart';
 
 class ProductCard extends StatelessWidget {
   final Product product;
 
   const ProductCard({super.key, required this.product});
+  String? cleanImageUrl(String? raw) {
+    if (raw == null) return null;
+
+    final match = RegExp(r'https?://[^\s"\\\]\[,]+').firstMatch(raw);
+    if (match == null) return null;
+
+    var url = match.group(0)!;
+
+    // placehold.co serves SVG by default, which Flutter can't decode
+    if (url.contains('placehold.co')) {
+      final base = url.split('?').first;
+      url = base.endsWith('.png') ? base : '$base.png';
+    }
+
+    // placeimg.com is shut down
+    if (url.contains('placeimg.com')) return null;
+
+    return url;
+  }
 
   @override
   Widget build(BuildContext context) {
+    final imageUrl = (product.images != null && product.images!.isNotEmpty)
+        ? cleanImageUrl(product.images!.first)
+        : null;
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
           PageRouteBuilder(
             transitionDuration: const Duration(milliseconds: 500),
-            pageBuilder: (context, animation, secondaryAnimation) => 
+            pageBuilder: (context, animation, secondaryAnimation) =>
                 ProductDetailsScreen(product: product),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return FadeTransition(opacity: animation, child: child);
-            },
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+                  return FadeTransition(opacity: animation, child: child);
+                },
           ),
         );
       },
@@ -47,15 +71,30 @@ class ProductCard extends StatelessWidget {
                   Hero(
                     tag: 'product-${product.id}',
                     child: ClipRRect(
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                      child: Image.network(
-                        product.imageUrl,
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        height: double.infinity,
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(24),
+                      ),
+                      child: SizedBox.expand(
+                        child: imageUrl == null
+                            ? const _ImageFallback()
+                            : Image.network(
+                                imageUrl,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    const _ImageFallback(),
+                                loadingBuilder: (context, child, progress) =>
+                                    progress == null
+                                    ? child
+                                    : const Center(
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      ),
+                              ),
                       ),
                     ),
                   ),
+
                   Positioned(
                     top: 12,
                     right: 12,
@@ -84,7 +123,7 @@ class ProductCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Text(
-                      product.name,
+                      product.title!,
                       style: const TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 16,
@@ -98,7 +137,7 @@ class ProductCard extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          '\$${product.price.toStringAsFixed(2)}',
+                          '\$${product.price!.toStringAsFixed(2)}',
                           style: const TextStyle(
                             color: AppTheme.primary,
                             fontWeight: FontWeight.bold,
@@ -125,6 +164,20 @@ class ProductCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _ImageFallback extends StatelessWidget {
+  const _ImageFallback();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.grey.shade200,
+      child: const Center(
+        child: Icon(Icons.image_not_supported_outlined, color: Colors.grey),
       ),
     );
   }
