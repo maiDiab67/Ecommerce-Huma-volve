@@ -1,10 +1,10 @@
-import 'package:ecommerce_app_huma_volve/features/home/cubit/home_cubit.dart';
-import 'package:ecommerce_app_huma_volve/features/home/cubit/home_states.dart';
+import 'package:ecommerce_app_huma_volve/features/home/presentation/view_model/home_cubit.dart';
+import 'package:ecommerce_app_huma_volve/features/home/presentation/view_model/home_states.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../core/dummy_data.dart';
-import '../../../core/theme.dart';
+import '../../../../core/dummy_data.dart';
+import '../../../../core/theme.dart';
 import 'widgets/product_card.dart';
 import 'widgets/category_chip.dart';
 

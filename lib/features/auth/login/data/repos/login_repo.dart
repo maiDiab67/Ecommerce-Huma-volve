@@ -1,4 +1,5 @@
 import 'package:ecommerce_app_huma_volve/core/constants/api_endpoints.dart';
+import 'package:ecommerce_app_huma_volve/core/storage/secure_storage.dart';
 
 import '../../../../../core/network/api_services.dart';
 import '../login_request_body.dart';
@@ -14,6 +15,8 @@ class LoginRepo {
       ApiEndpoints.login,
       data: loginRequestBody.toJson(),
     );
+    await SecureStorage.saveAccessToken(response.data['access_token']);
+    await SecureStorage.saveRefreshToken(response.data['refresh_token']);
     return LoginResponse.fromJson(response.data);
   }
 }

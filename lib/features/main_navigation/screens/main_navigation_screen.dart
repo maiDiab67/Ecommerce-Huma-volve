@@ -1,11 +1,16 @@
 import 'package:ecommerce_app_huma_volve/core/network/api_services.dart';
-import 'package:ecommerce_app_huma_volve/features/home/cubit/home_cubit.dart';
-import 'package:ecommerce_app_huma_volve/features/home/data/repo/home_repo.dart';
+import 'package:ecommerce_app_huma_volve/features/home/data/data_source/home_remote_data_source.dart';
+import 'package:ecommerce_app_huma_volve/features/home/data/data_source/home_remote_data_source_impl.dart';
+import 'package:ecommerce_app_huma_volve/features/home/data/repo/home_repo_impl.dart';
+import 'package:ecommerce_app_huma_volve/features/home/domain/use_cases/get_categories_use_case.dart';
+import 'package:ecommerce_app_huma_volve/features/home/domain/use_cases/get_product_use_case.dart';
+import 'package:ecommerce_app_huma_volve/features/home/presentation/view_model/home_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/theme.dart';
-import '../../home/screens/home_screen.dart';
+import '../../home/domain/repo/home_repo.dart';
+import '../../home/presentation/view/home_screen.dart';
 import '../../cart/screens/cart_screen.dart';
 import '../../profile/screens/profile_screen.dart';
 
@@ -20,14 +25,23 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
   late final ApiServices apiServices;
   late final HomeRepo homeRepo;
+  late final HomeRemoteDataSource homeRemoteDataSource;
+  late final GetCategoriesUseCase getCategoriesUseCase;
+  late final GetProductUseCase getProductUseCase;
   late final HomeCubit homeCubit;
 
   @override
   void initState() {
     super.initState();
     apiServices = ApiServices();
-    homeRepo = HomeRepo(apiServices);
-    homeCubit = HomeCubit(homeRepo);
+    homeRemoteDataSource = HomeRemoteDataSourceImpl(apiServices.dio);
+    homeRepo = HomeRepoImpl(homeRemoteDataSource);
+    getCategoriesUseCase = GetCategoriesUseCase(homeRepo);
+    getProductUseCase = GetProductUseCase(homeRepo);
+    homeCubit = HomeCubit(
+      getCategoriesUseCase: getCategoriesUseCase,
+      getProductsUseCase: getProductUseCase,
+    );
   }
 
   @override
