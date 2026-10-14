@@ -1,8 +1,15 @@
+import 'package:ecommerce_app_huma_volve/features/auth/login/presentation/view_model/login_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/network/api_services.dart';
 import '../../../core/storage/secure_storage.dart';
 import '../../../core/theme.dart';
-import '../../auth/login/screens/login_screen.dart';
+import '../../auth/login/data/data_source/login_remote_data_source_impl.dart';
+import '../../auth/login/data/repos/login_repo_impl.dart';
+import '../../auth/login/domain/repo/login_repo.dart';
+import '../../auth/login/domain/use_cases/login_use_case.dart';
+import '../../auth/login/presentation/view/login_screen.dart';
 import '../../main_navigation/screens/main_navigation_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -40,11 +47,21 @@ class _SplashScreenState extends State<SplashScreen> {
           ),
         );
       } else {
+        final apiServices = ApiServices();
+
+        final loginRemoteDataSource = LoginRemoteDataSourceImpl(apiServices);
+
+        final LoginRepo loginRepo = LoginRepoImpl(loginRemoteDataSource);
+
+        final loginUseCase = LoginUseCase(loginRepo);
         Navigator.pushReplacement(
           context,
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
-                const LoginScreen(),
+                BlocProvider(
+                  create: (context) => LoginCubit(loginUseCase),
+                  child: const LoginScreen(),
+                ),
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) {
                   return FadeTransition(opacity: animation, child: child);

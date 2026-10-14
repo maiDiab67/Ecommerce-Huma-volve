@@ -1,10 +1,16 @@
+import 'package:ecommerce_app_huma_volve/features/auth/login/presentation/view_model/login_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/dummy_data.dart';
+import '../../../core/network/api_services.dart';
 import '../../../core/storage/secure_storage.dart';
 import '../../../core/theme.dart';
+import '../../auth/login/data/data_source/login_remote_data_source_impl.dart';
+import '../../auth/login/data/repos/login_repo_impl.dart';
+import '../../auth/login/domain/use_cases/login_use_case.dart';
 import '../widgets/profile_menu_item.dart';
-import '../../auth/login/screens/login_screen.dart';
+import '../../auth/login/presentation/view/login_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -92,16 +98,24 @@ class ProfileScreen extends StatelessWidget {
                     title: 'Logout',
                     isDestructive: true,
                     onTap: () async {
+                      final apiServices = ApiServices();
+                      final remoteDataSource = LoginRemoteDataSourceImpl(
+                        apiServices,
+                      );
+                      final loginRepo = LoginRepoImpl(remoteDataSource);
+                      final loginUseCase = LoginUseCase(loginRepo);
                       await SecureStorage.deleteAccessToken();
                       await SecureStorage.deleteRefreshToken();
                       Navigator.pushReplacement(
                         context,
                         PageRouteBuilder(
-                          pageBuilder: (
-                            context,
-                            animation,
-                            secondaryAnimation,
-                          ) => const LoginScreen(),
+                          pageBuilder:
+                              (context, animation, secondaryAnimation) =>
+                                  BlocProvider(
+                                    create: (context) =>
+                                        LoginCubit(loginUseCase),
+                                    child: const LoginScreen(),
+                                  ),
                           transitionsBuilder:
                               (context, animation, secondaryAnimation, child) {
                                 return FadeTransition(

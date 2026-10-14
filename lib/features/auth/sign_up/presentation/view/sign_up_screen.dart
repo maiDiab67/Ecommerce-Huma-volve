@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/theme.dart';
 import '../../../../../core/widgets/custom_text_field.dart';
 import '../../../../../core/widgets/primary_button.dart';
-import '../../../login/screens/login_screen.dart';
+import '../../../login/presentation/view/login_screen.dart';
 import '../../domain/entities/signup_request_body_entity.dart';
 
 import '../view_model/signup_cubit.dart';

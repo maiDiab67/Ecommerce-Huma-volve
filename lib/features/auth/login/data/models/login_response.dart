@@ -1,7 +1,7 @@
-class LoginResponse {
-  String? accessToken;
-  String? refreshToken;
-  LoginResponse({this.accessToken, this.refreshToken});
+import 'package:ecommerce_app_huma_volve/features/auth/login/domain/entities/login_response_body_entity.dart';
+
+class LoginResponse extends LoginResponseBodyEntity {
+  LoginResponse({super.accessToken, super.refreshToken});
 
   LoginResponse.fromJson(Map<String, dynamic> json) {
     accessToken = json['access_token'];

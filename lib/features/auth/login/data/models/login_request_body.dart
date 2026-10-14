@@ -1,8 +1,7 @@
-class LoginRequestBody {
-  String? email;
-  String? password;
+import '../../domain/entities/login_request_body_entity.dart';
 
-  LoginRequestBody({this.email, this.password});
+class LoginRequestBody extends LoginRequestBodyEntity {
+  LoginRequestBody({super.email, super.password});
 
   LoginRequestBody.fromJson(Map<String, dynamic> json) {
     email = json['email'];

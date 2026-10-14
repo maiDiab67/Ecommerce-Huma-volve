@@ -7,27 +7,49 @@ import 'home_states.dart';
 class HomeCubit extends Cubit<HomeStates> {
   final GetCategoriesUseCase getCategoriesUseCase;
   final GetProductUseCase getProductsUseCase;
+
   HomeCubit({
     required this.getCategoriesUseCase,
     required this.getProductsUseCase,
   }) : super(HomeInitial());
 
-  void getCategories() async {
+  Future<void> getCategories() async {
+    if (isClosed) return;
+
     emit(CategoriesLoading());
 
-    final categories = await getCategoriesUseCase.invoke();
-    categories.fold(
-      (failure) => emit(CategoriesError(failure.message)),
-      (categories) => emit(CategoriesLoaded(categories)),
-    );
+    try {
+      final result = await getCategoriesUseCase.invoke();
+
+      if (isClosed) return;
+
+      result.fold(
+        (failure) => emit(CategoriesError(failure.message)),
+        (categories) => emit(CategoriesLoaded(categories)),
+      );
+    } catch (e) {
+      if (isClosed) return;
+      emit(CategoriesError(e.toString()));
+    }
   }
 
-  void getProducts(int? categoryId) async {
+  Future<void> getProducts(int? categoryId) async {
+    if (isClosed || categoryId == null) return;
+
     emit(ProductsLoading());
-    final products = await getProductsUseCase.invoke(categoryId!);
-    products.fold(
-      (failure) => emit(ProductsError(failure.message)),
-      (products) => emit(ProductsLoaded(products)),
-    );
+
+    try {
+      final result = await getProductsUseCase.invoke(categoryId);
+
+      if (isClosed) return;
+
+      result.fold(
+        (failure) => emit(ProductsError(failure.message)),
+        (products) => emit(ProductsLoaded(products)),
+      );
+    } catch (e) {
+      if (isClosed) return;
+      emit(ProductsError(e.toString()));
+    }
   }
 }
