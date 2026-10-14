@@ -7,7 +7,7 @@ class SignUpInitial extends SignUpState {}
 class SignUpLoading extends SignUpState {}
 
 class SignUpSuccess extends SignUpState {
-  final String userId;
+  final int userId;
 
   SignUpSuccess(this.userId);
 }

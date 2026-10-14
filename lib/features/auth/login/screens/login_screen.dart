@@ -1,14 +1,21 @@
 import 'package:dio/dio.dart';
 import 'package:ecommerce_app_huma_volve/features/auth/login/data/login_request_body.dart';
 import 'package:ecommerce_app_huma_volve/features/auth/login/data/repos/login_repo.dart';
+import 'package:ecommerce_app_huma_volve/features/auth/sign_up/data/data_source/signup_remote_data_source.dart';
+import 'package:ecommerce_app_huma_volve/features/auth/sign_up/data/data_source/signup_remote_data_source_impl.dart';
+import 'package:ecommerce_app_huma_volve/features/auth/sign_up/data/repo/signup_repo_impl.dart';
+import 'package:ecommerce_app_huma_volve/features/auth/sign_up/domain/repo/signup_repo.dart';
+import 'package:ecommerce_app_huma_volve/features/auth/sign_up/domain/use_cases/signup_use_case.dart';
+import 'package:ecommerce_app_huma_volve/features/auth/sign_up/presentation/view_model/signup_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/network/api_services.dart';
 import '../../../../core/widgets/custom_text_field.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../core/theme.dart';
 import '../../../main_navigation/screens/main_navigation_screen.dart';
-import '../../sign_up/screens/sign_up_screen.dart';
+import '../../sign_up/presentation/view/sign_up_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -158,14 +165,24 @@ class _LoginScreenState extends State<LoginScreen> {
                     const Text('Don\'t have an account? '),
                     GestureDetector(
                       onTap: () {
+                        final SignupRemoteDataSource signupRemoteDataSource =
+                            SignupRemoteDataSourceImpl(apiServices);
+                        final SignupRepo signupRepo = SignupRepoImpl(
+                          signupRemoteDataSource,
+                        );
+                        final SignupUseCase signupUseCase = SignupUseCase(
+                          signupRepo,
+                        );
                         Navigator.pushReplacement(
                           context,
                           PageRouteBuilder(
-                            pageBuilder: (
-                              context,
-                              animation,
-                              secondaryAnimation,
-                            ) => const SignUpScreen(),
+                            pageBuilder:
+                                (context, animation, secondaryAnimation) =>
+                                    BlocProvider(
+                                      create: (context) =>
+                                          SignupCubit(signupUseCase),
+                                      child: const SignUpScreen(),
+                                    ),
                             transitionsBuilder:
                                 (
                                   context,

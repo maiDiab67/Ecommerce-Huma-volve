@@ -1,16 +1,12 @@
-class SignupRequestBody {
-  final String name;
-  final String email;
-  final String password;
-  final String avatar;
-  final String role;
+import '../../domain/entities/signup_request_body_entity.dart';
 
+class SignupRequestBody extends SignupRequestBodyEntity {
   SignupRequestBody({
-    required this.name,
-    required this.email,
-    required this.password,
-    required this.role,
-    required this.avatar,
+    required super.name,
+    required super.email,
+    required super.password,
+    required super.role,
+    required super.avatar,
   });
 
   Map<String, dynamic> toJson() {
