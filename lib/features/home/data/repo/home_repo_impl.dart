@@ -14,10 +14,16 @@ class HomeRepoImpl implements HomeRepo {
 
   @override
   Future<Either<Failure, List<HomeProductEntity>>> getProducts(
-    int categoryId,
-  ) async {
+    int categoryId, {
+    required int limit,
+    required int offset,
+  }) async {
     try {
-      final products = await remoteDataSource.getProducts(categoryId);
+      final products = await remoteDataSource.getProducts(
+        categoryId,
+        limit: limit,
+        offset: offset,
+      );
       return Right(products as List<HomeProductEntity>);
     } catch (e) {
       return Left(Failure(e.toString()));

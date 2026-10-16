@@ -8,7 +8,11 @@ class GetProductUseCase {
   final HomeRepo homeRepo;
   GetProductUseCase(this.homeRepo);
 
-  Future<Either<Failure, List<HomeProductEntity>>> invoke(int categoryId) {
-    return homeRepo.getProducts(categoryId);
+  Future<Either<Failure, List<HomeProductEntity>>> invoke(
+    int categoryId, {
+    required int limit,
+    required int offset,
+  }) {
+    return homeRepo.getProducts(categoryId, limit: limit, offset: offset);
   }
 }
