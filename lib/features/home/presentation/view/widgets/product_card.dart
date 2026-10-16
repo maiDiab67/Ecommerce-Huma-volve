@@ -1,13 +1,30 @@
+import 'package:ecommerce_app_huma_volve/features/details/cubit/product_details_cubit.dart';
 import 'package:ecommerce_app_huma_volve/features/home/domain/entities/home_product_entity.dart';
+import 'package:ecommerce_app_huma_volve/features/home/domain/use_cases/get_categories_use_case.dart';
+import 'package:ecommerce_app_huma_volve/features/home/domain/use_cases/get_product_use_case.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../../core/network/api_services.dart';
 import '../../../../../core/theme.dart';
 import '../../../../details/screens/product_details_screen.dart';
+import '../../../data/data_source/home_remote_data_source.dart';
+import '../../../data/data_source/home_remote_data_source_impl.dart';
+import '../../../data/repo/home_repo_impl.dart';
+import '../../../domain/repo/home_repo.dart';
+import '../../../domain/use_cases/get_product_by_id_use_case.dart';
+import '../../view_model/home_cubit.dart';
 
 class ProductCard extends StatelessWidget {
   final HomeProductEntity product;
-
-  const ProductCard({super.key, required this.product});
+  late final ApiServices apiServices;
+  late final HomeRepo homeRepo;
+  late final HomeRemoteDataSource homeRemoteDataSource;
+  late final GetProductByIdUseCase getProductByIdUseCase;
+  late final GetCategoriesUseCase getCategoriesUseCase;
+  late final GetProductUseCase getProductUseCase;
+  late final HomeCubit homeCubit;
+  ProductCard({super.key, required this.product});
   String? cleanImageUrl(String? raw) {
     if (raw == null) return null;
 
@@ -30,6 +47,16 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    apiServices = ApiServices();
+    homeRemoteDataSource = HomeRemoteDataSourceImpl(apiServices.dio);
+    homeRepo = HomeRepoImpl(homeRemoteDataSource);
+    getProductByIdUseCase = GetProductByIdUseCase(homeRepo);
+    getCategoriesUseCase = GetCategoriesUseCase(homeRepo);
+    getProductUseCase = GetProductUseCase(homeRepo);
+    homeCubit = HomeCubit(
+      getCategoriesUseCase: getCategoriesUseCase,
+      getProductsUseCase: getProductUseCase,
+    );
     final imageUrl = (product.images != null && product.images!.isNotEmpty)
         ? cleanImageUrl(product.images!.first)
         : null;
@@ -39,8 +66,14 @@ class ProductCard extends StatelessWidget {
           context,
           PageRouteBuilder(
             transitionDuration: const Duration(milliseconds: 500),
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                ProductDetailsScreen(product: product),
+            pageBuilder: (context, animation, secondaryAnimation) {
+              return BlocProvider(
+                create: (_) => ProductDetailsCubit(
+                  getProductByIdUseCase: getProductByIdUseCase,
+                )..getProductById(product.id!),
+                child: ProductDetailsScreen(productId: product.id!),
+              );
+            },
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) {
                   return FadeTransition(opacity: animation, child: child);

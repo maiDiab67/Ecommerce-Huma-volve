@@ -11,4 +11,5 @@ abstract class HomeRepo {
     required int offset,
   });
   Future<Either<Failure, List<HomeCategoryEntity>>> getCategories();
+  Future<Either<Failure, HomeProductEntity>> getProductById(int productId);
 }

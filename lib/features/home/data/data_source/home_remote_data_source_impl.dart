@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:ecommerce_app_huma_volve/core/dummy_data.dart';
 
 import '../models/category_model.dart';
 import '../models/product_model.dart';
@@ -37,6 +38,16 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
           .toList();
     } catch (e) {
       throw Exception('Failed to load products');
+    }
+  }
+
+  @override
+  Future<HomeProductModel> getProductById(int productId) async {
+    try {
+      final response = await dio.get('/products/$productId');
+      return HomeProductModel.fromJson(response.data);
+    } catch (e) {
+      throw Exception('Failed to load products drtails');
     }
   }
 }
